@@ -16,9 +16,11 @@ class StockService
 
     protected string $apiKey;
 
+    protected string $endpoint = 'stocks';
+
     public function __construct()
     {
-        $this->baseUrl = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/stocks') .'stocks';
+        $this->baseUrl = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/');
         $this->apiKey = Config::get('services.api.key');
         $this->client = new Client();
     }
@@ -32,25 +34,26 @@ class StockService
         $page = 1;
         $hasMorePages = true;
 
+        $dateFrom = $dateFrom ?: '2025-01-01';
+
         DB::beginTransaction();
         try {
             while ($hasMorePages) {
                 $response = $this->fetchPage($page, $dateFrom);
 
-                if (!isset($response['data'])) {
+                if (!isset($response['data']) || !isset($response['data']['stocks'])) {
                     break;
                 }
 
-                dd($response);
-                $stocks = $response['data'];
+                $stocks = $response['data']['stocks'];
 
                 if (empty($stocks)) {
                     $hasMorePages = false;
                     break;
                 }
+
                 // Сохраняем данные
                 foreach ($stocks as $stockData) {
-                    dd($stockData);
                     $this->saveStock($stockData);
                 }
 
@@ -68,7 +71,7 @@ class StockService
             }
 
             DB::commit();
-            echo "Сбор данных завершен. \n";
+            echo "Сбор данных завершен. Всего записей: " . Stock::count() . "\n";
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -82,9 +85,8 @@ class StockService
      */
     protected function fetchPage(int $page, string $dateFrom): array
     {
-        $url = "{$this->baseUrl}?dateFrom={$dateFrom}&key={$this->apiKey}&page={$page}";
+        $url = $this->baseUrl . $this->endpoint . "?dateFrom={$dateFrom}&key={$this->apiKey}&page={$page}";
 
-        dd($url);
         $response = $this->client->request('GET', $url, [
             'timeout' => 30,
             'connect_timeout' => 10,
@@ -106,11 +108,10 @@ class StockService
     protected function saveStock(array $data): void
     {
         Stock::create([
-            'supplier_article' => $data['supplier_article'],
-            'tech_size' => $data['tech_size'],
-            'warehouse_name' => $data['warehouse_name'],
             'date' => $data['date'] ?? null,
             'last_change_date' => $data['last_change_date'] ?? null,
+            'supplier_article' => $data['supplier_article'] ?? '',
+            'tech_size' => $data['tech_size'] ?? '',
             'barcode' => $data['barcode'] ?? null,
             'quantity' => $data['quantity'] ?? 0,
             'is_supply' => $data['is_supply'] ?? false,
@@ -126,6 +127,5 @@ class StockService
             'price' => $data['price'] ?? 0,
             'discount' => $data['discount'] ?? 0,
         ]);
-
     }
 }

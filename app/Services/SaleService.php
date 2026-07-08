@@ -16,13 +16,13 @@ class SaleService
 
     protected string $apiKey;
 
-    protected string $dateTo = '2026-07-06';
+    protected string $endpoint = 'sales';
 
     public function __construct()
     {
-        $this->baseUrl  = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/sales').'sales';
-        $this->apiKey   = Config::get('services.api.key');
-        $this->client   = new Client();
+        $this->baseUrl = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/');
+        $this->apiKey = Config::get('services.api.key');
+        $this->client = new Client();
     }
 
     /**
@@ -35,18 +35,18 @@ class SaleService
         $hasMorePages = true;
 
         $dateFrom = $dateFrom ?: '2025-01-01';
-        $dateTo = $dateTo ?: $this->dateTo;
+        $dateTo = $dateTo ?: date('Y-m-d');
 
         DB::beginTransaction();
         try {
             while ($hasMorePages) {
                 $response = $this->fetchPage($page, $dateFrom, $dateTo);
 
-                if (!isset($response['data'])) {
+                if (!isset($response['data']) || !isset($response['data']['sales'])) {
                     break;
                 }
 
-                $sales = $response['data'];
+                $sales = $response['data']['sales'];
 
                 if (empty($sales)) {
                     $hasMorePages = false;
@@ -89,7 +89,7 @@ class SaleService
      */
     protected function fetchPage(int $page, string $dateFrom, string $dateTo): array
     {
-        $url = "{$this->baseUrl}?dateTo={$dateTo}&page={$page}&key={$this->apiKey}&dateFrom={$dateFrom}";
+        $url = $this->baseUrl . $this->endpoint . "?dateTo={$dateTo}&page={$page}&key={$this->apiKey}&dateFrom={$dateFrom}";
 
         $response = $this->client->request('GET', $url, [
             'timeout' => 30,
@@ -112,34 +112,33 @@ class SaleService
     protected function saveSale(array $data): void
     {
         Sale::create([
-            'sale_id'                  => $data['sale_id'],
-            'g_number'                 => $data['g_number'] ?? '',
-            'date'                     => $data['date'] ?? null,
-            'last_change_date'         => $data['last_change_date'] ?? null,
-            'supplier_article'         => $data['supplier_article'] ?? '',
-            'tech_size'                => $data['tech_size'] ?? '',
-            'barcode'                  => $data['barcode'] ?? null,
-            'total_price'              => $data['total_price'] ?? 0,
-            'discount_percent'         => $data['discount_percent'] ?? 0,
-            'is_supply'                => $data['is_supply'] ?? false,
-            'is_realization'           => $data['is_realization'] ?? false,
-            'promo_code_discount'      => $data['promo_code_discount'] ?? null,
-            'warehouse_name'           => $data['warehouse_name'] ?? '',
-            'country_name'             => $data['country_name'] ?? '',
-            'oblast_okrug_name'        => $data['oblast_okrug_name'] ?? '',
-            'region_name'              => $data['region_name'] ?? '',
-            'income_id'                => $data['income_id'] ?? null,
-            'odid'                     => $data['odid'] ?? null,
-            'spp'                      => $data['spp'] ?? 0,
-            'for_pay'                  => $data['for_pay'] ?? 0,
-            'finished_price'         => $data['finished_price'] ?? 0,
-            'price_with_disc'          => $data['price_with_disc'] ?? 0,
-            'nm_id'                    => $data['nm_id'] ?? null,
-            'subject'                  => $data['subject'] ?? '',
-            'category'                 => $data['category'] ?? '',
-            'brand'                    => $data['brand'] ?? '',
-            'is_storno'                => $data['is_storno'] ?? null,
+            'g_number' => $data['g_number'] ?? '',
+            'date' => $data['date'] ?? null,
+            'last_change_date' => $data['last_change_date'] ?? null,
+            'supplier_article' => $data['supplier_article'] ?? '',
+            'tech_size' => $data['tech_size'] ?? '',
+            'barcode' => $data['barcode'] ?? null,
+            'total_price' => $data['total_price'] ?? 0,
+            'discount_percent' => $data['discount_percent'] ?? 0,
+            'is_supply' => $data['is_supply'] ?? false,
+            'is_realization' => $data['is_realization'] ?? false,
+            'promo_code_discount' => $data['promo_code_discount'] ?? null,
+            'warehouse_name' => $data['warehouse_name'] ?? '',
+            'country_name' => $data['country_name'] ?? '',
+            'oblast_okrug_name' => $data['oblast_okrug_name'] ?? '',
+            'region_name' => $data['region_name'] ?? '',
+            'income_id' => $data['income_id'] ?? null,
+            'sale_id' => $data['sale_id'] ?? '',
+            'odid' => $data['odid'] ?? null,
+            'spp' => $data['spp'] ?? 0,
+            'for_pay' => $data['for_pay'] ?? 0,
+            'finished_price' => $data['finished_price'] ?? 0,
+            'price_with_disc' => $data['price_with_disc'] ?? 0,
+            'nm_id' => $data['nm_id'] ?? null,
+            'subject' => $data['subject'] ?? '',
+            'category' => $data['category'] ?? '',
+            'brand' => $data['brand'] ?? '',
+            'is_storno' => $data['is_storno'] ?? null,
         ]);
-
     }
 }

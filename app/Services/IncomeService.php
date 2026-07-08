@@ -16,13 +16,13 @@ class IncomeService
 
     protected string $apiKey;
 
-    protected string $dateTo = '2026-07-06';
+    protected string $endpoint = 'incomes';
 
     public function __construct()
     {
-        $this->baseUrl  = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/incomes').'incomes';
-        $this->apiKey   = Config::get('services.api.key');
-        $this->client   = new Client();
+        $this->baseUrl = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/');
+        $this->apiKey = Config::get('services.api.key');
+        $this->client = new Client();
     }
 
     /**
@@ -35,7 +35,7 @@ class IncomeService
         $hasMorePages = true;
 
         $dateFrom = $dateFrom ?: '2025-01-01';
-        $dateTo = $dateTo ?: $this->dateTo;
+        $dateTo = $dateTo ?: date('Y-m-d');
 
         DB::beginTransaction();
         try {
@@ -43,11 +43,11 @@ class IncomeService
                 usleep(200000); //5 запросов в секунду
                 $response = $this->fetchPage($page, $dateFrom, $dateTo);
 
-                if (!isset($response['data']) ) {
+                if (!isset($response['data']) || !isset($response['data']['incomes'])) {
                     break;
                 }
 
-                $incomes = $response['data'];
+                $incomes = $response['data']['incomes'];
 
                 if (empty($incomes)) {
                     $hasMorePages = false;
@@ -87,7 +87,7 @@ class IncomeService
      */
     protected function fetchPage(int $page, string $dateFrom, string $dateTo): array
     {
-        $url = "{$this->baseUrl}?dateTo={$dateTo}&page={$page}&key={$this->apiKey}&dateFrom={$dateFrom}";
+        $url = $this->baseUrl . $this->endpoint . "?dateTo={$dateTo}&page={$page}&key={$this->apiKey}&dateFrom={$dateFrom}";
 
         $response = $this->client->request('GET', $url, [
             'timeout' => 30,
@@ -110,19 +110,18 @@ class IncomeService
     protected function saveIncome(array $data): void
     {
         Income::create([
-            'income_id'              => $data['income_id'],
-            'number'                 => $data['number'] ?? '',
-            'date'                   => $data['date'] ?? null,
-            'last_change_date'       => $data['last_change_date'] ?? null,
-            'supplier_article'       => $data['supplier_article'] ?? '',
-            'tech_size'              => $data['tech_size'] ?? '',
-            'barcode'                => $data['barcode'] ?? null,
-            'quantity'               => $data['quantity'] ?? 0,
-            'total_price'            => $data['total_price'] ?? 0,
-            'date_close'             => $data['date_close'] ?? null,
-            'warehouse_name'         => $data['warehouse_name'] ?? '',
-            'nm_id'                  => $data['nm_id'] ?? null,
+            'income_id' => $data['income_id'],
+            'number' => $data['number'] ?? '',
+            'date' => $data['date'] ?? null,
+            'last_change_date' => $data['last_change_date'] ?? null,
+            'supplier_article' => $data['supplier_article'] ?? '',
+            'tech_size' => $data['tech_size'] ?? '',
+            'barcode' => $data['barcode'] ?? null,
+            'quantity' => $data['quantity'] ?? 0,
+            'total_price' => $data['total_price'] ?? 0,
+            'date_close' => $data['date_close'] ?? null,
+            'warehouse_name' => $data['warehouse_name'] ?? '',
+            'nm_id' => $data['nm_id'] ?? null,
         ]);
-
     }
 }

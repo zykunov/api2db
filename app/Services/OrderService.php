@@ -16,13 +16,13 @@ class OrderService
 
     protected string $apiKey;
 
-    protected string $dateTo = '2026-07-06';
+    protected string $endpoint = 'orders';
 
     public function __construct()
     {
-        $this->baseUrl  = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/orders').'orders';
-        $this->apiKey   = Config::get('services.api.key');
-        $this->client   = new Client();
+        $this->baseUrl = Config::get('services.api.base_url', 'http://109.73.206.144:6969/api/');
+        $this->apiKey = Config::get('services.api.key');
+        $this->client = new Client();
     }
 
     /**
@@ -35,18 +35,18 @@ class OrderService
         $hasMorePages = true;
 
         $dateFrom = $dateFrom ?: '2025-01-01';
-        $dateTo = $dateTo ?: $this->dateTo;
+        $dateTo = $dateTo ?: date('Y-m-d');
 
         DB::beginTransaction();
         try {
             while ($hasMorePages) {
                 $response = $this->fetchPage($page, $dateFrom, $dateTo);
 
-                if (!isset($response['data'])) {
+                if (!isset($response['data']) || !isset($response['data']['orders'])) {
                     break;
                 }
 
-                $orders = $response['data'];
+                $orders = $response['data']['orders'];
 
                 if (empty($orders)) {
                     $hasMorePages = false;
@@ -86,7 +86,7 @@ class OrderService
      */
     protected function fetchPage(int $page, string $dateFrom, string $dateTo): array
     {
-        $url = "{$this->baseUrl}?dateTo={$dateTo}&key={$this->apiKey}&dateFrom={$dateFrom}&page={$page}";
+        $url = $this->baseUrl . $this->endpoint . "?dateTo={$dateTo}&key={$this->apiKey}&dateFrom={$dateFrom}&page={$page}";
 
         $response = $this->client->request('GET', $url, [
             'timeout' => 30,
@@ -109,25 +109,24 @@ class OrderService
     protected function saveOrder(array $data): void
     {
         Order::create([
-            'g_number'               => $data['g_number'],
-            'date'                   => $data['date'] ?? null,
-            'last_change_date'       => $data['last_change_date'] ?? null,
-            'supplier_article'       => $data['supplier_article'] ?? '',
-            'tech_size'              => $data['tech_size'] ?? '',
-            'barcode'                => $data['barcode'] ?? null,
-            'total_price'            => $data['total_price'] ?? 0,
-            'discount_percent'       => $data['discount_percent'] ?? 0,
-            'warehouse_name'         => $data['warehouse_name'] ?? '',
-            'oblast'                 => $data['oblast'] ?? '',
-            'income_id'              => $data['income_id'] ?? null,
-            'odid'                   => $data['odid'] ?? null,
-            'nm_id'                  => $data['nm_id'] ?? null,
-            'subject'                => $data['subject'] ?? '',
-            'category'               => $data['category'] ?? '',
-            'brand'                  => $data['brand'] ?? '',
-            'is_cancel'              => $data['is_cancel'] ?? false,
-            'cancel_dt'              => $data['cancel_dt'] ?? null,
+            'g_number' => $data['g_number'],
+            'date' => $data['date'] ?? null,
+            'last_change_date' => $data['last_change_date'] ?? null,
+            'supplier_article' => $data['supplier_article'] ?? '',
+            'tech_size' => $data['tech_size'] ?? '',
+            'barcode' => $data['barcode'] ?? null,
+            'total_price' => $data['total_price'] ?? 0,
+            'discount_percent' => $data['discount_percent'] ?? 0,
+            'warehouse_name' => $data['warehouse_name'] ?? '',
+            'oblast' => $data['oblast'] ?? '',
+            'income_id' => $data['income_id'] ?? null,
+            'odid' => $data['odid'] ?? null,
+            'nm_id' => $data['nm_id'] ?? null,
+            'subject' => $data['subject'] ?? '',
+            'category' => $data['category'] ?? '',
+            'brand' => $data['brand'] ?? '',
+            'is_cancel' => $data['is_cancel'] ?? false,
+            'cancel_dt' => $data['cancel_dt'] ?? null,
         ]);
-
     }
 }
