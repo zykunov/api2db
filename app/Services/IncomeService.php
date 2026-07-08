@@ -43,11 +43,11 @@ class IncomeService
                 usleep(200000); //5 запросов в секунду
                 $response = $this->fetchPage($page, $dateFrom, $dateTo);
 
-                if (!isset($response['data']) || !isset($response['data']['incomes'])) {
+                if (!isset($response['data'])) {
                     break;
                 }
 
-                $incomes = $response['data']['incomes'];
+                $incomes = $response['data'];
 
                 if (empty($incomes)) {
                     $hasMorePages = false;

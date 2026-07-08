@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->date('last_change_date');
+            $table->date('last_change_date')->nullable();
             $table->string('supplier_article');
             $table->string('tech_size');
             $table->BigInteger('barcode')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('is_supply')->default(false);
             $table->boolean('is_realization')->default(false);
             $table->integer('quantity_full')->default(0);
-            $table->string('warehouse_name');
+            $table->string('warehouse_name')->nullable();
             $table->integer('in_way_to_client')->default(0);
             $table->integer('in_way_from_client')->default(0);
             $table->BigInteger('nm_id')->nullable();

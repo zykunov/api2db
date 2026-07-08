@@ -31,7 +31,7 @@ class CollectStocks extends Command
         $this->info('Начало сбора данных...');
 
 
-        $dateFrom = $this->option('dateFrom') ?: now()->subDay()->format('Y-m-d');
+        $dateFrom = $this->option('dateFrom') ?: now()->format('Y-m-d');
 
         $this->info("Период: {$dateFrom}");
 

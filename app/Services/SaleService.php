@@ -42,11 +42,11 @@ class SaleService
             while ($hasMorePages) {
                 $response = $this->fetchPage($page, $dateFrom, $dateTo);
 
-                if (!isset($response['data']) || !isset($response['data']['sales'])) {
+                if (!isset($response['data'])) {
                     break;
                 }
 
-                $sales = $response['data']['sales'];
+                $sales = $response['data'];
 
                 if (empty($sales)) {
                     $hasMorePages = false;

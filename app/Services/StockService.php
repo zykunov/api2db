@@ -41,11 +41,11 @@ class StockService
             while ($hasMorePages) {
                 $response = $this->fetchPage($page, $dateFrom);
 
-                if (!isset($response['data']) || !isset($response['data']['stocks'])) {
+                if (!isset($response['data'])) {
                     break;
                 }
 
-                $stocks = $response['data']['stocks'];
+                $stocks = $response['data'];
 
                 if (empty($stocks)) {
                     $hasMorePages = false;
@@ -117,6 +117,7 @@ class StockService
             'is_supply' => $data['is_supply'] ?? false,
             'is_realization' => $data['is_realization'] ?? false,
             'quantity_full' => $data['quantity_full'] ?? 0,
+            'warehouse_name' => $data['warehouse_name'] ?? '',
             'in_way_to_client' => $data['in_way_to_client'] ?? 0,
             'in_way_from_client' => $data['in_way_from_client'] ?? 0,
             'nm_id' => $data['nm_id'] ?? null,

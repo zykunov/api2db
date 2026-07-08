@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('g_number', 50)->nullable();
             $table->date('date');
-            $table->date('last_change_date');
+            $table->date('last_change_date')->nullable();
             $table->string('supplier_article')->nullable();
             $table->string('tech_size')->nullable();
             $table->BigInteger('barcode')->nullable();

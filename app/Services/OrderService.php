@@ -42,11 +42,11 @@ class OrderService
             while ($hasMorePages) {
                 $response = $this->fetchPage($page, $dateFrom, $dateTo);
 
-                if (!isset($response['data']) || !isset($response['data']['orders'])) {
+                if (!isset($response['data'])) {
                     break;
                 }
 
-                $orders = $response['data']['orders'];
+                $orders = $response['data'];
 
                 if (empty($orders)) {
                     $hasMorePages = false;
